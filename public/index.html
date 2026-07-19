@@ -12,37 +12,69 @@
 </head>
 <body>
 
-  <!-- الشريط العلوي -->
-  <header class="topbar">
-    <button id="menuBtn" class="icon-btn" aria-label="القائمة">☰</button>
-    <h1 id="shopName" class="shop-name">نظام هوبا</h1>
-    <button class="icon-btn" onclick="location.hash='#/invoice/new'" title="فاتورة جديدة">🧾＋</button>
-  </header>
+  <!-- ====== شاشة تسجيل الدخول / الإعداد الأولي ====== -->
+  <div id="authRoot" class="auth-wrap hidden">
+    <div class="auth-card">
+      <img src="/icons/icon-192.png" alt="هوبا" class="auth-logo" />
+      <h1>نظام هوبا</h1>
+      <p class="auth-sub">إدارة ومبيعات — كمبيوتر وموبايل</p>
 
-  <div class="layout">
-    <!-- القائمة الجانبية -->
-    <nav id="sidebar" class="sidebar">
-      <a href="#/dashboard" data-route="dashboard">📊 لوحة التحكم</a>
-      <a href="#/invoice/new" data-route="invoice-new">🧾 فاتورة جديدة</a>
-      <a href="#/invoices" data-route="invoices">🗂️ الفواتير</a>
-      <a href="#/products" data-route="products">📦 المنتجات</a>
-      <a href="#/customers" data-route="customers">👥 العملاء</a>
-      <a href="#/expenses" data-route="expenses">💸 المصروفات</a>
-      <a href="#/settings" data-route="settings">⚙️ الإعدادات</a>
-    </nav>
-    <div id="overlay" class="overlay"></div>
+      <!-- الإعداد الأولي: إنشاء حساب المدير -->
+      <form id="setupForm" class="hidden" autocomplete="off">
+        <h2>👋 أهلاً بك — الإعداد الأولي</h2>
+        <p class="auth-tip">أنشئ حساب المدير (يحدث مرة واحدة فقط)</p>
+        <div class="field"><label>اسمك</label><input id="setup_name" placeholder="مثال: محمد أحمد" required /></div>
+        <div class="field"><label>اسم المستخدم</label><input id="setup_username" placeholder="مثال: admin" required /></div>
+        <div class="field"><label>كلمة المرور</label><input id="setup_password" type="password" required /></div>
+        <div class="field"><label>تأكيد كلمة المرور</label><input id="setup_confirm" type="password" required /></div>
+        <button class="btn" style="width:100%" type="submit">🚀 إنشاء الحساب والبدء</button>
+      </form>
 
-    <!-- المحتوى -->
-    <main id="view" class="view"></main>
+      <!-- تسجيل الدخول -->
+      <form id="loginForm" class="hidden" autocomplete="off">
+        <h2>🔐 تسجيل الدخول</h2>
+        <div class="field"><label>اسم المستخدم</label><input id="login_username" required /></div>
+        <div class="field"><label>كلمة المرور</label><input id="login_password" type="password" required /></div>
+        <button class="btn" style="width:100%" type="submit">دخول</button>
+      </form>
+
+      <p id="authError" class="auth-error hidden"></p>
+    </div>
   </div>
 
-  <!-- شريط تنقل سفلي للموبايل -->
-  <nav class="bottombar">
-    <a href="#/dashboard" data-route="dashboard"><span>📊</span>الرئيسية</a>
-    <a href="#/invoice/new" data-route="invoice-new"><span>🧾</span>فاتورة</a>
-    <a href="#/products" data-route="products"><span>📦</span>المنتجات</a>
-    <a href="#/invoices" data-route="invoices"><span>🗂️</span>الفواتير</a>
-  </nav>
+  <!-- ====== التطبيق ====== -->
+  <div id="appRoot" class="hidden">
+
+    <header class="topbar">
+      <button id="menuBtn" class="icon-btn" aria-label="القائمة">☰</button>
+      <h1 id="shopName" class="shop-name">نظام هوبا</h1>
+      <span id="userBadge" class="user-badge"></span>
+      <button id="logoutBtn" class="icon-btn" title="تسجيل الخروج">⏻</button>
+    </header>
+
+    <div class="layout">
+      <nav id="sidebar" class="sidebar">
+        <a href="#/dashboard" data-route="dashboard">📊 لوحة التحكم</a>
+        <a href="#/invoice/new" data-route="invoice-new">🧾 فاتورة جديدة</a>
+        <a href="#/invoices" data-route="invoices">🗂️ الفواتير</a>
+        <a href="#/products" data-route="products">📦 المنتجات</a>
+        <a href="#/customers" data-route="customers">👥 العملاء</a>
+        <a href="#/expenses" data-route="expenses">💸 المصروفات</a>
+        <a href="#/reports" data-route="reports" data-admin>📈 التقارير</a>
+        <a href="#/settings" data-route="settings">⚙️ الإعدادات</a>
+      </nav>
+      <div id="overlay" class="overlay"></div>
+
+      <main id="view" class="view"></main>
+    </div>
+
+    <nav class="bottombar">
+      <a href="#/dashboard" data-route="dashboard"><span>📊</span>الرئيسية</a>
+      <a href="#/invoice/new" data-route="invoice-new"><span>🧾</span>فاتورة</a>
+      <a href="#/products" data-route="products"><span>📦</span>المنتجات</a>
+      <a href="#/invoices" data-route="invoices"><span>🗂️</span>الفواتير</a>
+    </nav>
+  </div>
 
   <!-- نافذة منبثقة عامة -->
   <div id="modal" class="modal hidden">
@@ -52,6 +84,18 @@
         <button class="icon-btn" onclick="closeModal()">✕</button>
       </div>
       <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- نافذة الكاميرا (مسح الباركود) -->
+  <div id="camModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>📷 مسح الباركود</h2>
+        <button class="icon-btn" onclick="stopScanner()">✕</button>
+      </div>
+      <video id="camVideo" playsinline muted></video>
+      <p class="cam-tip">وجّه الكاميرا نحو الباركود</p>
     </div>
   </div>
 

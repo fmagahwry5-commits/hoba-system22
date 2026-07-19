@@ -161,6 +161,43 @@ tr.low-stock td { background: #fef2f2; }
 .toast.ok { background: var(--primary-dark); }
 .toast.err { background: var(--danger); }
 
+/* ---------- شاشة تسجيل الدخول ---------- */
+.auth-wrap {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #0f766e 0%, #115e59 55%, #134e4a 100%);
+  padding: 18px; overflow-y: auto;
+}
+.auth-wrap.hidden { display: none; }
+.auth-card {
+  background: #fff; border-radius: 20px;
+  width: 100%; max-width: 380px;
+  padding: 28px 24px; text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+}
+.auth-logo { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 10px; }
+.auth-card h1 { font-size: 1.35rem; }
+.auth-card h2 { font-size: 1.05rem; margin: 16px 0 12px; text-align: right; }
+.auth-sub { color: var(--muted); font-size: .88rem; margin-bottom: 4px; }
+.auth-tip { color: var(--muted); font-size: .85rem; margin: -6px 0 12px; text-align: right; }
+.auth-card .field { text-align: right; }
+.auth-error {
+  background: #fef2f2; color: var(--danger);
+  border-radius: 10px; padding: 10px; margin-top: 14px;
+  font-size: .88rem; font-weight: 600;
+}
+.auth-error.hidden { display: none; }
+
+.user-badge {
+  background: rgba(255, 255, 255, .16);
+  border-radius: 999px; padding: 5px 12px;
+  font-size: .8rem; font-weight: 700; white-space: nowrap;
+}
+
+/* ---------- كاميرا الباركود ---------- */
+#camVideo { width: 100%; border-radius: 12px; background: #000; min-height: 220px; }
+.cam-tip { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 8px; }
+
 /* ---------- شريط الموبايل السفلي ---------- */
 .bottombar { display: none; }
 

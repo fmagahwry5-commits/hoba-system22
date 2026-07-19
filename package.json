@@ -1,0 +1,13 @@
+{
+  "name": "hoba-system",
+  "version": "2.0.0",
+  "private": true,
+  "description": "نظام هوبا للإدارة والمبيعات — يعمل محلياً أو على استضافة سحابية",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

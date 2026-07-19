@@ -1,5 +1,5 @@
 /* نظام هوبا — Service Worker لتحميل أسرع للواجهة */
-const CACHE = 'hoba-v1';
+const CACHE = 'hoba-v2';
 const ASSETS = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
