@@ -1,10 +1,20 @@
 /**
- * نظام هوبا — المصادقة وإدارة الجلسات
- * كلمات المرور مُشفّرة بـ scrypt (مدمج في Node.js) — لا تُحفظ أبداً كنصّ صريح.
+ * نظام هوبا — المصادقة
+ * - كلمات المرور مُشفّرة بـ scrypt (مدمج في Node.js)
+ * - الجلسات: توكنات موقّعة HMAC (بدون حالة على السيرفر) —
+ *   لتعمل بشكل صحيح في بيئات Serverless مثل Vercel حيث لا ذاكرة مشتركة.
  */
 'use strict';
 
 const crypto = require('crypto');
+
+/* المفتاح السري للتوقيع:
+   - على الاستضافة: اضبط SESSION_SECRET (متغير بيئة) حتى تبقى الجلسات صالحة بين نسخ التشغيل
+   - محلياً بدونه: يُولَّد عشوائي كل تشغيل (تسجيل دخول جديد بعد إعادة التشغيل فقط) */
+const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.SESSION_SECRET) {
+  console.log('ℹ️  SESSION_SECRET غير مضبوط — الجلسات تنتهي بعد إعادة تشغيل السيرفر (آمن محلياً)');
+}
 
 /* ---------------- تشفير كلمات المرور ---------------- */
 
@@ -25,36 +35,53 @@ function verifyPassword(password, stored) {
   }
 }
 
-/* ---------------- الجلسات (توكن في الذاكرة) ---------------- */
+/* ---------------- توكنات الجلسة الموقّعة (HMAC — بدون حالة) ---------------- */
 
-const sessions = new Map(); // token -> { user, exp }
 const SESSION_DAYS = 30;
 
+const b64u = (obj) => Buffer.from(JSON.stringify(obj), 'utf8').toString('base64url');
+const sign = (data) => crypto.createHmac('sha256', SECRET).update(data).digest('base64url');
+
 function newSession(user) {
-  const token = crypto.randomBytes(32).toString('hex');
-  const exp = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
-  sessions.set(token, { user: { id: user.id, username: user.username, name: user.name, role: user.role }, exp });
-  return token;
+  const payload = b64u({
+    id: user.id,
+    username: user.username,
+    name: user.name,
+    role: user.role,
+    exp: Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000,
+  });
+  return `${payload}.${sign(payload)}`;
+}
+
+function safeEqual(a, b) {
+  const ba = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  return ba.length === bb.length && crypto.timingSafeEqual(ba, bb);
 }
 
 function getSession(token) {
-  if (!token) return null;
-  const s = sessions.get(token);
-  if (!s) return null;
-  if (Date.now() > s.exp) {
-    sessions.delete(token);
+  if (!token || typeof token !== 'string') return null;
+  const dot = token.indexOf('.');
+  if (dot === -1) return null;
+  const payload = token.slice(0, dot);
+  const signature = token.slice(dot + 1);
+  if (!safeEqual(signature, sign(payload))) return null; // توكن معدَّل/مزوَّر
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (!data.exp || Date.now() > data.exp) return null; // منتهي الصلاحية
+    return { id: data.id, username: data.username, name: data.name, role: data.role };
+  } catch {
     return null;
   }
-  return s.user;
 }
 
-function destroySession(token) {
-  sessions.delete(token);
-}
+// التوكنات بلا حالة على السيرفر — تسجيل الخروج يحذف التوكن من جهاز المستخدم
+function destroySession() {}
 
 /* ---------------- حماية تسجيل الدخول من التخمين ---------------- */
+/* (في الذاكرة: كامل محلياً، وأفضل جهد في Serverless) */
 
-const attempts = new Map(); // ip -> { fails, until }
+const attempts = new Map();
 const MAX_FAILS = 5;
 const LOCK_MIN = 5;
 
